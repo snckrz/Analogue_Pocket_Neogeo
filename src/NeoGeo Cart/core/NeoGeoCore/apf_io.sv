@@ -163,6 +163,7 @@ module apf_io
 	output reg [1:0]	use_mouse_reg,
 	output reg  		video_mode,
 	output reg [2:0]	APF_Video_ratio,
+	output reg composite_blend_enable,
 	output reg [3:0]	snd_enable,
 	output reg [5:0]	ch_enable,
 	output reg [15:0]	pixel_mux_change,
@@ -349,6 +350,20 @@ io_bridge_peripheral ibs (
 	wire				savestate_load_busy;
 	wire				savestate_load_ok;
 	wire				savestate_load_err;
+
+// Memories remain unavailable until complete machine-state capture/restore exists.
+assign savestate_supported = 1'b0;
+assign savestate_addr = 32'b0;
+assign savestate_size = 32'b0;
+assign savestate_maxloadsize = 32'b0;
+assign savestate_start_ack = 1'b0;
+assign savestate_start_busy = 1'b0;
+assign savestate_start_ok = 1'b0;
+assign savestate_start_err = 1'b0;
+assign savestate_load_ack = 1'b0;
+assign savestate_load_busy = 1'b0;
+assign savestate_load_ok = 1'b0;
+assign savestate_load_err = 1'b0;
 
 // bridge target commands
 // synchronous to clk_74a
@@ -627,6 +642,7 @@ always @(posedge clk_74a or negedge reset_l_main) begin
 		Core_reset				<= 1'b0;
 		Core_reset_counter	<= 'd0;
 		APF_Video_ratio		<= 'b0;
+		composite_blend_enable <= 1'b0;
 		system_change			<= 'b0;
 		CPU_overclock			<= 'b0;
 	end
@@ -690,6 +706,7 @@ always @(posedge clk_74a or negedge reset_l_main) begin
 				32'hF0000204 : screen_x_pos			<= bridge_wr_data;
 				32'hF0000208 : screen_y_pos			<= bridge_wr_data;
 				32'hF000020C : APF_Video_ratio		<= bridge_wr_data;
+				32'hF0000210 : composite_blend_enable <= bridge_wr_data[0];
 				
 				// Sound Modes
 				32'hF0000300 : ch_enable				<= bridge_wr_data;
@@ -809,6 +826,7 @@ always @(posedge clk_74a) begin
 				16'h0204 : Neogeo_status <= screen_x_pos;
 				16'h0208 : Neogeo_status <= screen_y_pos;
 				16'h020C : Neogeo_status <= APF_Video_ratio;
+				16'h0210 : Neogeo_status <= {31'b0, composite_blend_enable};
 				
 				// Sound Modes
 				16'h0300 : Neogeo_status <= ch_enable;

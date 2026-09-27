@@ -1,3 +1,13 @@
+# Neo Geo Pocket development fork
+
+Based on [Mazamars312’s Pocket core](https://github.com/Mazamars312/Analogue_Pocket_Neogeo), originally by Furrtek.
+
+This development branch adds **Composite Blend: Off / Full** (default Off), adapted from Kitrinx’s module as used in ericlewis’s Genesis Pocket core. It averages adjacent horizontal RGB pixels; it is not full NTSC emulation.
+
+**Memories/save states are not implemented.** See [the source audit](docs/SAVESTATE_STATUS.md). Composite Blend is not yet hardware-tested. Compilation completed, but timing checks failed. No release is provided by this branch; `dist` still contains the upstream binary, not the modified build. See [build validation](docs/BUILD.md).
+
+---
+
 # Neogeo for Pocket (0.8.1)
 
 This is the port of the Neogeo Core made by [Furrtek](https://www.patreon.com/furrtek/posts) to the Analogue Pocket using the APF framework and some of my own code.

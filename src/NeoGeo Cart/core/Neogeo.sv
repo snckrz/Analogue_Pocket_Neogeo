@@ -372,6 +372,7 @@ wire 			start_system;
 wire [31:0]	screen_x_pos;
 wire [31:0]	screen_y_pos;
 wire [2:0]	APF_Video_ratio;
+wire composite_blend_enable;
 wire [23:0] V2ROM_MASK;
 wire [2:0]  C1_wait;
 
@@ -411,6 +412,7 @@ apf_io apf_io
 	.use_mouse_reg				(use_mouse_reg),
 	.video_mode					(video_mode),
 	.APF_Video_ratio			(APF_Video_ratio),
+	.composite_blend_enable (composite_blend_enable),
 	.snd_enable					(snd_enable),
 	.ch_enable					(ch_enable),
 	
@@ -1612,6 +1614,18 @@ reg [7:0]	VGA_R_reg;
 reg [7:0]	VGA_G_reg;
 reg [7:0]	VGA_B_reg;
 	
+// Filter active pixels before the Pocket scaler-metadata slot is inserted.
+wire blend_hblank = !(x_count >= VID_H_BPORCH && x_count < VID_H_ACTIVE_REG + VID_H_BPORCH);
+wire blend_vblank = !(y_count >= VID_V_BPORCH && y_count < VID_V_ACTIVE + VID_V_BPORCH);
+(* async_reg = "true" *) reg [1:0] blend_sync = 2'b0;
+always @(posedge CLK_VIDEO) blend_sync <= {blend_sync[0], composite_blend_enable};
+wire [23:0] blended_rgb;
+composite_blend blend (
+    .clk(CLK_VIDEO), .enable(blend_sync[1]),
+    .hblank(blend_hblank), .vblank(blend_vblank),
+    .rgb_in({VGA_R_reg, VGA_G_reg, VGA_B_reg}), .rgb_out(blended_rgb)
+);
+
 always @(posedge CLK_VIDEO) begin
 	VGA_DE <= 0;
 	VGA_R <= 8'h0;
@@ -1649,9 +1663,9 @@ always @(posedge CLK_VIDEO) begin
 	if(x_count >= VID_H_BPORCH && x_count < VID_H_ACTIVE_REG + VID_H_BPORCH) begin
 		if((y_count >= VID_V_BPORCH) && (y_count < (VID_V_ACTIVE + VID_V_BPORCH))) begin
 			// data enable. this is the active region of the line
-			VGA_R <= VGA_R_reg;
-			VGA_G <= VGA_G_reg;
-			VGA_B <= VGA_B_reg;
+			VGA_R <= blended_rgb[23:16];
+			VGA_G <= blended_rgb[15:8];
+			VGA_B <= blended_rgb[7:0];
 		end 
 	end
 	else if ((x_count == VID_H_ACTIVE_REG + VID_H_BPORCH) && 

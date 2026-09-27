@@ -2,6 +2,26 @@
     "interact": {
         "magic": "APF_VER_1",
         "variables": [
+{
+    "name": "Composite Blend",
+    "id": 8,
+    "type": "list",
+    "enabled": true,
+    "persist": true,
+    "address": "0xF0000210",
+    "defaultval": 0,
+    "mask": "0xFFFFFFFE",
+    "options": [
+        {
+            "value": 0,
+            "name": "Off"
+        },
+        {
+            "value": 1,
+            "name": "Full"
+        }
+    ]
+},
             {
                 "name": "Reset Core",
                 "id": 1,
